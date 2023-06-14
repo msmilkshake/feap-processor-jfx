@@ -6,9 +6,9 @@
 
 <AnchorPane minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pt.hmsk.gui.PreRun">
    <children>
-      <Button fx:id="btnStart" layoutX="180.0" layoutY="30.0" mnemonicParsing="false" onMouseClicked="#btnStartOnClicked" text="Iniciar Execução" />
+      <Button fx:id="btnStart" disable="true" layoutX="180.0" layoutY="30.0" mnemonicParsing="false" onMouseClicked="#btnStartOnClicked" text="Iniciar Execução" />
       <Label layoutX="10.0" layoutY="5.0" text="Introduza o NIPC do fornecedor" />
-      <TextField fx:id="txtNIPC" layoutX="10.0" layoutY="30.0" />
+      <TextField fx:id="txtNIPC" disable="true" layoutX="10.0" layoutY="30.0" />
    </children>
    <padding>
       <Insets bottom="8.0" right="10.0" />

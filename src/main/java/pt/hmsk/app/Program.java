@@ -10,8 +10,12 @@ import javafx.stage.Stage;
 
 public class Program extends Application {
     
+    public static Stage primaryStage;
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
+        
+        Program.primaryStage = primaryStage;
         primaryStage.setTitle("FE-AP - Preenchimento de Pagamentos");
         
         FXMLLoader loader = new FXMLLoader(MainWindow.class.getResource("MainWindow.fxml"));

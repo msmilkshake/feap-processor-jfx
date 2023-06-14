@@ -14,8 +14,9 @@ public interface Xpath {
     String loggedUserName = "//*/li[@class=\"UserMenuZone\"]";
     String nextPage = "//*/input[@class=\"rgPageNext\"]";
     String pageCount = "//*[@class=\"rgWrap rgInfoPart\"]";
-    String newWindowPopup = "//*/li[@class=\"rmItem rmLast\"]/a";
+    String newWindowPopup = "//*/li[@class=\"rmItem rmLast\"]//span";
     String resultRow = "//*/td[@class=\"gridItemsStyle gridItemsStyleRefNumber\"]";
+    
     
     // Search
     String openSearch = "//*/a[@class=\"aCritPesq\"]";
@@ -26,4 +27,27 @@ public interface Xpath {
     String supplierResultList = "//*/ul[@class=\"racList\"]";
     String firstProviderResult = "//ul[@class='racList']/li[1]";
     String loadingIcon = "//*[@id=\"divLoadingUProgress\"]//*/img";
+    String supplierDropDown = "//ul[@class='racList']/li";
+    
+    // Filters
+    String stateFilterAll = "//*/input[@id=\"chk_F_001_stateAll\"]";
+    String stateFilterProcessed = "//*/input[@id=\"chk_F_001_state11\"]";
+    
+    // Invoice Details
+    String paymentInfoButton = "//li[3]//span[@class=\"rtsLink\"]";
+    String inputDocEmsPag = "//div[@class=\"DocDetailData\"]//tr//input[@type=\"text\" " +
+            "and contains(@name, \"PaymentIssuedReferenceTxt\")]";
+    String inputDatEmsPag = "//div[@class=\"DocDetailData\"]//tr//input[@type=\"text\" " +
+            "and contains(@name, \"PaymentIssuedDate\")]";
+    String inputDatValPag = "//div[@class=\"DocDetailData\"]//tr//input[@type=\"text\" " +
+            "and contains(@name, \"PaymentAmountDate\")]";
+    String inputRefPag = "//div[@class=\"DocDetailData\"]//tr//input[@type=\"text\" " +
+            "and contains(@name, \"PaymentReferenceTxt\")]";
+    String actionSelect = "//div[contains(@id, \"BottomButtons\")]//select[contains(@id, \"Action\")]";
+    String execute = "//div[contains(@id, \"BottomButtons\")]//input[contains(@id, " +
+            "\"ExecuteButton\") and contains(@class, \"Button\")]";
+    String goBack = "//div[contains(@id, \"BottomButtons\")]//input[contains(@id, " +
+            "\"CancelButton\") and contains(@class, \"Button\")]";
+    String confirmButton = "//table[@class=\"rwTable rwShadow\"]//span[@class=\"rwOuterSpan\"]";
+    
 }

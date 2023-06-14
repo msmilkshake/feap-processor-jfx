@@ -6,6 +6,7 @@ import pt.hmsk.common.Rgx;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -29,19 +30,21 @@ public class Excel {
                     Cell cellH = row.getCell(CellReference.convertColStringToIndex("H"));
 
                     if (cellC != null
-                            && !cellC.getStringCellValue().trim().isEmpty()
+                            && !cellC.toString().trim().isEmpty()
                             && cellE != null
                             && cellF != null
                             && cellG != null) {
-                        String invoice = cellC.getStringCellValue().trim();
+                        String invoice = cellC.toString().trim();
                         Matcher m = Pattern.compile(Rgx.invoiceCapture).matcher(invoice);
-                        m.matches();
+                        if (!m.matches()) {
+                            continue;
+                        }
                         String key = m.group(1);
                         String[] values = new String[]{
-                                cellH.getStringCellValue().trim(),
-                                cellE.getStringCellValue().trim().replaceAll("/", "-"),
-                                cellF.getStringCellValue().trim().replaceAll("/", "-"),
-                                cellG.getStringCellValue().trim()
+                                cellH.toString().trim().replaceAll("\\s", ""), // TOP LEFT
+                                new SimpleDateFormat("dd-MM-yyyy").format(cellE.getDateCellValue()), // TOP RIGHT
+                                new SimpleDateFormat("dd-MM-yyyy").format(cellF.getDateCellValue()), // BOTTOM LEFT
+                                cellG.toString().trim() // BOTTOM RIGHT
                         };
 
                         dataMap.put(key, values);
@@ -55,5 +58,12 @@ public class Excel {
         }
 
         return dataMap;
+    }
+
+    public static void main(String[] args) {
+        Map<String, String[]> data = getDataMap("test.XLSX");
+        for (String key : data.keySet()) {
+            System.out.println(key + ": " + "[" + String.join(", ", data.get(key))  + "]");
+        }
     }
 }

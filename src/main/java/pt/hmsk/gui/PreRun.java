@@ -15,7 +15,10 @@ public class PreRun {
     @FXML
     private Button btnStart;
     @FXML
-    public TextField txtNIPC;
+    private TextField txtNIPC;
+    
+    private boolean isLoggedIn = false;
+    private boolean hasExcelFile = false;
 
     public static PreRun getInstance() {
         return instance;
@@ -25,8 +28,23 @@ public class PreRun {
         instance = this;
     }
     
+    public void userLoggedIn(boolean val) {
+        isLoggedIn = val;
+        enableInputs();
+    }
+    public void userAddedFile(boolean val) {
+        hasExcelFile = val;
+        enableInputs();
+    }
+    
+    public void enableInputs() {
+        if (isLoggedIn && hasExcelFile) {
+            txtNIPC.setDisable(false);
+            btnStart.setDisable(false);
+        }
+    }
+    
     public void btnStartOnClicked() {
-        
         MainWindow.instance.getRunContentPane().getChildren().remove(0);
         MainWindow.instance.getRunContentPane().getChildren().add(RunningPane.pane);
 
@@ -39,6 +57,5 @@ public class PreRun {
         String nipc = txtNIPC.getText();
         ChromeController c = MainWindow.getController();
         c.exec(() -> c.clickResult(nipc));
-        
     }
 }
