@@ -237,121 +237,115 @@ public class ChromeController {
         int pages = Integer.parseInt(m.group(2).trim());
         int totalRecords = Integer.parseInt(m.group(3).trim());
         RunningPane.instance.logProgress("Pesquisa concluida. Foram encontradas " + totalRecords +
-                " faturas, em " + pages + " páginas de registos.");
+                " faturas para processamento.");
 
         // Results displayed
-        for (int i = 0, record = 1; i < pages; ++i) {
-            RunningPane.instance.logProgress("A processar a página n.º " + (i + 1) + "...");
+        for (int record = 0; record < totalRecords; ++record) {
+            RunningPane.instance.logProgress("Processamento #" + record + "...");
             new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
 
             List<WebElement> rows = getElements(Xpath.resultRow);
-            List<String> invoices = new ArrayList<>();
-
-            for (int j = 0; j < rows.size(); ++j, ++record) {
-                WebElement el = rows.get(j);
-                String invoiceName = el.getText();
-
-                Matcher m2 = Pattern.compile(Rgx.invoiceCapture).matcher(invoiceName);
-                m2.matches();
-                String invoiceNumber = m2.group(1);
-
-                invoices.add(invoiceNumber);
-
-                RunningPane.instance.logProgress("A verificar a fatura: " + invoiceName + "...");
-                if (!dataMap.containsKey(invoiceNumber)) {
-                    RunningPane.instance.logProgress("A fatura " + invoiceName + " não tem dados associados no mapa Excel.");
-                    continue;
-                }
-                System.out.println("Processing invoice: " + invoiceName);
-                System.out.println("Double clicking invoice.");
-                new Actions(driver).doubleClick(el).build().perform();
-                System.out.println("Double click done.");
-                RunningPane.instance.logProgress("A abrir os detalhes da fatura: " + invoiceName + "... (Pode demorar)");
-
-                waitForSpinner();
-
-                longWait.until(ExpectedConditions
-                        .visibilityOfElementLocated(By.xpath(Xpath.paymentInfoButton)));
-                RunningPane.instance.logProgress("Fatura " + invoiceName + "aberta.");
-                String[] fillData = dataMap.get(invoiceNumber);
-
-                RunningPane.instance.logProgress("A preencher os dados: \n" +
-                        " - Doc. Emissão Pagamento: " + fillData[0] + "\n" +
-                        " - Data Emissão Pagamento: " + fillData[1] + "\n" +
-                        " - Data valor pagamento: " + fillData[2] + "\n" +
-                        " - Referência pagamento: " + fillData[3] + "\n");
-                System.out.println("Invoice Details loaded and ready.");
-
-                getElement(Xpath.paymentInfoButton).click();
-                System.out.println("Clicked the Payment Info tab.");
-                new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
-
-                getElement(Xpath.inputDocEmsPag).sendKeys(fillData[0]);
-                getElement(Xpath.inputDatEmsPag).sendKeys(fillData[1]);
-                getElement(Xpath.inputDatValPag).sendKeys(fillData[2]);
-                getElement(Xpath.inputRefPag).sendKeys(fillData[3]);
-
-                new Actions(driver).pause(Duration.ofMillis(250)).build().perform();
-
-                WebElement selectElement = getElement(Xpath.actionSelect);
-                Select select = new Select(selectElement);
-
-                List<WebElement> options = select.getOptions();
-
-                // Iterate through the options to find a match
-                System.out.println("Checking if execute options are valid.");
-                boolean optionFound = false;
-                for (WebElement option : options) {
-                    if (option.getAttribute("value").equals("25") &&
-                            option.getText().equals("Emitir Pagamento")) {
-                        optionFound = true;
-                        break;
-                    }
-                }
-
-                if (!optionFound) {
-                    System.out.println("The option was not valid. Continuing to the next iteration.");
-                    RunningPane.instance.logProgress("A opção Emitir Pagamento não tem " +
-                            "o ID esperado. Reportar ao Filipe.");
-                    continue;
-                } else {
-                    System.out.println("Option is valid and was found.");
-                    System.out.println("Selecting the correct option.");
-                    select.selectByValue("25");
-                }
-                new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
-                System.out.println("Clicking execute.");
-                getElement(Xpath.execute).click();
-
-                System.out.println("Clicking the OK Popup");
-                wait.until(ExpectedConditions
-                        .visibilityOfElementLocated(By.xpath(Xpath.confirmButton)));
-                getElement(Xpath.confirmButton).click();
-                new Actions(driver).pause(Duration.ofMillis(250)).build().perform();
-
-                waitForSpinner();
-
-                System.out.println("Execute done.");
-
-                // Wait - Going back
-                longWait.until(ExpectedConditions
-                        .visibilityOfElementLocated(By.xpath(Xpath.pageCount)));
-
-                new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
-                rows = getElements(Xpath.resultRow);
-
-                double progress = 1.0 * record / totalRecords * 0.95 + 0.025;
-
-                RunningPane.instance.updateProgressBar(progress);
-                RunningPane.instance.logProgress("Fatura: " + invoiceName + " processada.");
+            
+            if (rows.isEmpty()) {
+                RunningPane.instance.logProgress("Não existem faturas para processar.");
+                break;
             }
-            RunningPane.instance.logProgress("Página n.º " + (i + 1) + " processada.");
-            if (i + 1 < pages) {
-                RunningPane.instance.logProgress("A avançar para a página seguinte...");
-                getElement(Xpath.nextPage).click();
-                waitForSpinner();
-                RunningPane.instance.logProgress("Página carregada.");
+            
+            WebElement el = rows.get(0);
+            String invoiceName = el.getText();
+
+            Matcher m2 = Pattern.compile(Rgx.invoiceCapture).matcher(invoiceName);
+            m2.matches();
+            String invoiceNumber = m2.group(1);
+
+            RunningPane.instance.logProgress("A verificar a fatura: " + invoiceName + "...");
+            if (!dataMap.containsKey(invoiceNumber)) {
+                RunningPane.instance.logProgress("A fatura " + invoiceName + " não tem dados associados no mapa Excel.");
+                continue;
             }
+            System.out.println("Processing invoice: " + invoiceName);
+            System.out.println("Double clicking invoice.");
+            new Actions(driver).doubleClick(el).build().perform();
+            System.out.println("Double click done.");
+            RunningPane.instance.logProgress("A abrir os detalhes da fatura: " + invoiceName + "... (Pode demorar)");
+
+            waitForSpinner();
+
+            longWait.until(ExpectedConditions
+                    .visibilityOfElementLocated(By.xpath(Xpath.paymentInfoButton)));
+            RunningPane.instance.logProgress("Fatura " + invoiceName + "aberta.");
+            String[] fillData = dataMap.get(invoiceNumber);
+
+            RunningPane.instance.logProgress("A preencher os dados: \n" +
+                    " - Doc. Emissão Pagamento: " + fillData[0] + "\n" +
+                    " - Data Emissão Pagamento: " + fillData[1] + "\n" +
+                    " - Data valor pagamento: " + fillData[2] + "\n" +
+                    " - Referência pagamento: " + fillData[3] + "\n");
+            System.out.println("Invoice Details loaded and ready.");
+
+            getElement(Xpath.paymentInfoButton).click();
+            System.out.println("Clicked the Payment Info tab.");
+            new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
+
+            getElement(Xpath.inputDocEmsPag).sendKeys(fillData[0]);
+            getElement(Xpath.inputDatEmsPag).sendKeys(fillData[1]);
+            getElement(Xpath.inputDatValPag).sendKeys(fillData[2]);
+            getElement(Xpath.inputRefPag).sendKeys(fillData[3]);
+
+            new Actions(driver).pause(Duration.ofMillis(250)).build().perform();
+
+            WebElement selectElement = getElement(Xpath.actionSelect);
+            Select select = new Select(selectElement);
+
+            List<WebElement> options = select.getOptions();
+
+            // Iterate through the options to find a match
+            System.out.println("Checking if execute options are valid.");
+            boolean optionFound = false;
+            for (WebElement option : options) {
+                if (option.getAttribute("value").equals("25") &&
+                        option.getText().equals("Emitir Pagamento")) {
+                    optionFound = true;
+                    break;
+                }
+            }
+
+            if (!optionFound) {
+                System.out.println("The option was not valid. Continuing to the next iteration.");
+                RunningPane.instance.logProgress("A opção Emitir Pagamento não tem " +
+                        "o ID esperado. Reportar ao Filipe.");
+                continue;
+            } else {
+                System.out.println("Option is valid and was found.");
+                System.out.println("Selecting the correct option.");
+                select.selectByValue("25");
+            }
+            new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
+            System.out.println("Clicking execute.");
+            getElement(Xpath.execute).click();
+
+            System.out.println("Clicking the OK Popup");
+            wait.until(ExpectedConditions
+                    .visibilityOfElementLocated(By.xpath(Xpath.confirmButton)));
+            getElement(Xpath.confirmButton).click();
+            new Actions(driver).pause(Duration.ofMillis(250)).build().perform();
+
+            waitForSpinner();
+
+            System.out.println("Execute done.");
+
+            // Wait - Going back
+            longWait.until(ExpectedConditions
+                    .visibilityOfElementLocated(By.xpath(Xpath.pageCount)));
+
+            new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
+
+            double progress = 1.0 * record / totalRecords * 0.95 + 0.025;
+
+            RunningPane.instance.updateProgressBar(progress);
+            RunningPane.instance.logProgress("Fatura: " + invoiceName + " processada.");
+
+            RunningPane.instance.logProgress("Processamento #" + record + " completo.");
         }
         RunningPane.instance.finishProgressBar();
         startRefreshTask();
