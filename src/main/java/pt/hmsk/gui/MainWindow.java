@@ -273,4 +273,11 @@ public class MainWindow {
             PreRun.getInstance().userLoggedIn(true);
         });
     }
+
+    public void unlockLoginButton() {
+        Platform.runLater(() -> {
+            btnLogin.setDisable(false);
+            PreRun.getInstance().userLoggedIn(false);
+        });
+    }
 }

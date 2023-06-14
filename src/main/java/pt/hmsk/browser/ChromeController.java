@@ -14,6 +14,10 @@ import pt.hmsk.gui.RunningPane;
 import pt.hmsk.logic.Excel;
 import pt.hmsk.logic.Tabs;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -107,6 +111,7 @@ public class ChromeController {
         } else {
             MainWindow.getInstance().setSession("Falha no Login. Por favor, reinicie a Aplicação.");
             System.out.println("Login Failed");
+            MainWindow.getInstance().unlockLoginButton();
         }
     }
 
@@ -147,122 +152,33 @@ public class ChromeController {
         if (executor != null) {
             executor.shutdown();
         }
-    }
 
-    public void clickResult2(String number) {
-        tabs.registerTab(Const.mainTab);
+        try {
+            // Assuming the PowerShell script is named 'killChromiumProcesses.ps1' and located in the same directory
+            String filePath = new File("cleanup.ps1").getAbsolutePath();
 
-        RunningPane.instance.logProgress("A pesquisar pelo fornecedor com NIPC: " + number);
-        RunningPane.instance.logProgress("A abrir a página de pesquisa...");
-        RunningPane.instance.updateProgressBar(0.025);
-        cancelRefreshTask();
-        driver.get(Url.listPage);
-        getElement(Xpath.openSearch).click();
-        wait.until(ExpectedConditions
-                .presenceOfElementLocated(By.xpath(Xpath.btnSearch))
-        );
+            // Create ProcessBuilder
+            ProcessBuilder pb = new ProcessBuilder("powershell.exe", "-ExecutionPolicy", "Bypass", "-File", filePath);
 
-        System.out.println("Search area loaded.");
-        new Actions(driver).pause(Duration.ofMillis(250)).build().perform();
-        RunningPane.instance.logProgress("Página de pesquisa aberta.");
+            // Start the process
+            Process process = pb.start();
 
-        RunningPane.instance.logProgress("A configurar os filtros de pesquisa...");
-        // Reset filters
-        getElement(Xpath.btnResetFilters).click();
-        waitForSpinner();
-        System.out.println("Filters resetted.");
+            // Get the input stream
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-        // State Selector
-        getElement(Xpath.stateFilterAll).click();
-        new Actions(driver).pause(Duration.ofMillis(20)).build().perform();
-        getElement(Xpath.stateFilterAll).click();
-        new Actions(driver).pause(Duration.ofMillis(20)).build().perform();
-        getElement(Xpath.stateFilterProcessed).click();
-        System.out.println("State Set.");
-
-        // Search for the NIPC
-        new Actions(driver).pause(Duration.ofMillis(250)).build().perform();
-        new Actions(driver).click(getElement(Xpath.supplierNumber)).build().perform();
-        new Actions(driver).pause(Duration.ofMillis(250)).build().perform();
-        new Actions(driver).sendKeys(number).build().perform();
-        new Actions(driver).pause(Duration.ofMillis(250)).build().perform();
-        wait.until(driver ->
-                driver.findElements(By.xpath(Xpath.supplierDropDown)).size() == 1);
-        System.out.println("Supplier found.");
-        wait.until(ExpectedConditions
-                .visibilityOfElementLocated(By.xpath(Xpath.firstProviderResult)));
-        new Actions(driver).click(getElement(Xpath.firstProviderResult)).build().perform();
-        System.out.println("Supplier clicked.");
-        getElement(Xpath.btnSearch).click();
-        RunningPane.instance.logProgress("Filtros de pesquisa configurados.");
-
-        RunningPane.instance.logProgress("A pesquisar pelas faturas...");
-        // Searching...
-        waitForSpinner();
-
-        Matcher m = Pattern.compile(Rgx.pageCount).matcher(getElement(Xpath.pageCount).getText());
-        m.matches();
-        int pages = Integer.parseInt(m.group(2).trim());
-        int totalRecords = Integer.parseInt(m.group(3).trim());
-        RunningPane.instance.logProgress("Pesquisa concluida. Foram encontradas " + totalRecords +
-                " faturas, em " + pages + " páginas de registos.");
-
-        // Results displayed
-        for (int i = 0, record = 1; i < pages; ++i) {
-            RunningPane.instance.logProgress("A abrir todas as faturas da página " + (i + 1) + "...");
-            new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
-            List<WebElement> rows = getElements(Xpath.resultRow);
-            List<String> invoices = new ArrayList<>();
-            for (int j = 0; j < rows.size(); ++j, ++record) {
-                WebElement el = rows.get(j);
-                Matcher m2 = Pattern.compile(Rgx.invoiceCapture).matcher(el.getText());
-                m2.matches();
-                invoices.add(m2.group(1));
-                System.out.println("Opening invoice: " + el.getText() + " in new tab.");
-                el.click();
-                new Actions(driver).contextClick(el).build().perform();
-                System.out.println("Right clicked on: " + el.getText());
-                wait.until(ExpectedConditions
-                        .visibilityOfElementLocated(By.xpath(Xpath.newWindowPopup)));
-                System.out.println("Menu detected. Clicking open in new tab.");
-                new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
-                new Actions(driver).click(getElement(Xpath.newWindowPopup)).build().perform();
-                new Actions(driver).pause(Duration.ofMillis(750)).build().perform();
-                System.out.println("Opened invoice tab #" + j + " for invoice: " + el.getText());
-                new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
-                tabs.registerTab(Const.invoiceTab + j);
-                System.out.println("Registered tab #" + j + " for invoice: " + el.getText());
-                new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
-                tabs.switchTo(Const.mainTab);
-                System.out.println("Switched back to Results tab.");
+            // Read the output from the command
+            String s = null;
+            while ((s = stdInput.readLine()) != null) {
+                System.out.println(s);
             }
-            RunningPane.instance.logProgress("Faturas da página " + (i + 1) + " abertas.");
-            for (int j = 0; j < rows.size(); ++j) {
-                RunningPane.instance.logProgress("A processar a fatura: " + invoices.get(j) + "...");
-                System.out.println("Switching to tab #" + j);
-                tabs.switchTo(Const.invoiceTab + j);
-                longWait.until(ExpectedConditions
-                        .visibilityOfElementLocated(By.xpath(Xpath.paymentInfoButton)));
-                System.out.println("Invoice Details page is ready.");
-                System.out.println("Clicking Payment Info tab...");
-                getElement(Xpath.paymentInfoButton).click();
-                System.out.println("Clicked Payment Info tab.");
-                new Actions(driver).pause(Duration.ofMillis(2500)).build().perform();
-                System.out.println("Closing tab #" + j);
-                tabs.close();
-                RunningPane.instance.logProgress("Fatura: " + invoices.get(j) + " processada.");
-                double progress = 1.0 * record / totalRecords * 0.95 + 0.025;
-                RunningPane.instance.updateProgressBar(progress);
-            }
-            tabs.switchTo(Const.mainTab);
-            if (i + 1 < pages) {
-                getElement(Xpath.nextPage).click();
-                waitForSpinner();
-            }
+
+            // Wait for the process to finish and get the exit value
+            int exitValue = process.waitFor();
+            System.out.println("Exit value is: " + exitValue);
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
         }
-        RunningPane.instance.finishProgressBar();
-        RunningPane.instance.logProgress("Processo concluído.");
-        startRefreshTask();
     }
 
     public void clickResult(String number) {
@@ -416,11 +332,11 @@ public class ChromeController {
                 waitForSpinner();
 
                 System.out.println("Execute done.");
-                
+
                 // Wait - Going back
                 longWait.until(ExpectedConditions
                         .visibilityOfElementLocated(By.xpath(Xpath.pageCount)));
-                
+
                 new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
                 rows = getElements(Xpath.resultRow);
 
