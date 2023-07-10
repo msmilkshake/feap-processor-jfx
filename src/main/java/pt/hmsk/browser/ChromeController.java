@@ -106,10 +106,20 @@ public class ChromeController {
             String name = m.group(1) + " " + m.group(2);
             System.out.println("Logged person: " + name);
             MainWindow.getInstance().setSession("Sessão iniciada com: " + name);
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             startRefreshTask();
         } else {
             MainWindow.getInstance().setSession("Falha no Login. Por favor, reinicie a Aplicação.");
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             System.out.println("Login Failed");
             MainWindow.getInstance().unlockLoginButton();
         }
@@ -205,6 +215,10 @@ public class ChromeController {
         System.out.println("Filters resetted.");
 
         // State Selector
+        getElement(Xpath.creditNote).click();
+        new Actions(driver).pause(Duration.ofMillis(20)).build().perform();
+        getElement(Xpath.debitNote).click();
+        new Actions(driver).pause(Duration.ofMillis(20)).build().perform();
         getElement(Xpath.stateFilterAll).click();
         new Actions(driver).pause(Duration.ofMillis(20)).build().perform();
         getElement(Xpath.stateFilterAll).click();
@@ -240,9 +254,15 @@ public class ChromeController {
                 " faturas para processamento.");
 
         // Results displayed
-        for (int record = 0; record < totalRecords; ++record) {
+        for (int record = 0, offset = 0; record < totalRecords; ++record) {
+            if (offset > 19) {
+                System.out.println("Changing page...");
+                offset = 0;
+                getElement(Xpath.nextPage).click();
+                waitForSpinner();
+            }
             RunningPane.instance.logProgress("Processamento #" + record + "...");
-            new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
+            new Actions(driver).pause(Duration.ofMillis(250)).build().perform();
 
             List<WebElement> rows = getElements(Xpath.resultRow);
             
@@ -251,7 +271,7 @@ public class ChromeController {
                 break;
             }
             
-            WebElement el = rows.get(0);
+            WebElement el = rows.get(offset);
             String invoiceName = el.getText();
 
             Matcher m2 = Pattern.compile(Rgx.invoiceCapture).matcher(invoiceName);
@@ -261,6 +281,8 @@ public class ChromeController {
             RunningPane.instance.logProgress("A verificar a fatura: " + invoiceName + "...");
             if (!dataMap.containsKey(invoiceNumber)) {
                 RunningPane.instance.logProgress("A fatura " + invoiceName + " não tem dados associados no mapa Excel.");
+                ++offset;
+                new Actions(driver).pause(Duration.ofMillis(1000)).build().perform();
                 continue;
             }
             System.out.println("Processing invoice: " + invoiceName);
@@ -287,6 +309,9 @@ public class ChromeController {
             System.out.println("Clicked the Payment Info tab.");
             new Actions(driver).pause(Duration.ofMillis(100)).build().perform();
 
+            wait.until(ExpectedConditions
+                    .elementToBeClickable(By.xpath(Xpath.inputDocEmsPag)));
+            
             getElement(Xpath.inputDocEmsPag).sendKeys(fillData[0]);
             getElement(Xpath.inputDatEmsPag).sendKeys(fillData[1]);
             getElement(Xpath.inputDatValPag).sendKeys(fillData[2]);
@@ -314,6 +339,8 @@ public class ChromeController {
                 System.out.println("The option was not valid. Continuing to the next iteration.");
                 RunningPane.instance.logProgress("A opção Emitir Pagamento não tem " +
                         "o ID esperado. Reportar ao Filipe.");
+                ++offset;
+                new Actions(driver).pause(Duration.ofMillis(1000)).build().perform();
                 continue;
             } else {
                 System.out.println("Option is valid and was found.");

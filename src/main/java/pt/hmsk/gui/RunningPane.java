@@ -1,5 +1,6 @@
 package pt.hmsk.gui;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
 import javafx.scene.control.ProgressBar;
@@ -44,9 +45,12 @@ public class RunningPane {
         glowPB.setVisible(false);
         progressBar.setProgress(1);
     }
-    
+
     public void logProgress(String message) {
-        logArea.appendText(message + "\n");
+        Platform.runLater(() -> {
+            logArea.appendText(message + "\n");
+            System.out.println(message);
+        });
     }
 
 }
