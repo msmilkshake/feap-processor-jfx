@@ -3,26 +3,11 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="260.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pt.hmsk.gui.RunningPane">
+<AnchorPane prefHeight="150.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pt.hmsk.gui.RunningPane">
    <children>
       <Label layoutX="20.0" layoutY="5.0" text="Informação de progresso" />
       <TextArea fx:id="logArea" editable="false" prefHeight="84.0" prefWidth="160.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="23.0" />
       <ProgressBar fx:id="progressBar" layoutX="20.0" layoutY="116.0" prefWidth="200.0" progress="0.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" />
       <ProgressBar fx:id="glowPB" layoutX="15.0" layoutY="116.0" opacity="0.35" prefWidth="200.0" visible="false" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" />
-      <Label layoutX="10.0" layoutY="142.0" text="Detalhes da execução" />
-      <ScrollPane layoutX="10.0" layoutY="160.0" prefHeight="180.0" prefWidth="631.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0">
-         <content>
-            <AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="180.0">
-               <children>
-                  <TableView fx:id="table" prefHeight="240.0" prefWidth="704.0">
-                     <columns>
-                        <TableColumn prefWidth="75.0" text="C1" />
-                        <TableColumn prefWidth="75.0" text="C2" />
-                     </columns>
-                  </TableView>
-               </children>
-            </AnchorPane>
-         </content>
-      </ScrollPane>
    </children>
 </AnchorPane>

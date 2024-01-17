@@ -75,7 +75,6 @@
                                     <Label layoutX="17.0" layoutY="87.0" text="Escolha o ficheiro Excel, exportado do Gerfip, com as informações" />
                                     <Label layoutX="17.0" layoutY="105.0" text="de pagamento:" />
                                     <TextField fx:id="txtFilePicker" editable="false" layoutX="44.0" layoutY="134.0" onMouseClicked="#txtFilePickerOnClicked" prefHeight="26.0" prefWidth="236.0" promptText="📎 Clique para selecionar o ficheiro..." />
-                                    <Button fx:id="btnLoadFile" disable="true" layoutX="44.0" layoutY="172.0" mnemonicParsing="false" text="Carregar Ficheiro" />
                                  </children>
                               </AnchorPane>
                           </content>

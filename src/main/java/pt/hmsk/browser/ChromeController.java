@@ -10,6 +10,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import pt.hmsk.app.App;
 import pt.hmsk.common.*;
 import pt.hmsk.gui.MainWindow;
+import pt.hmsk.gui.PreRun;
 import pt.hmsk.gui.RunningPane;
 import pt.hmsk.logic.Excel;
 import pt.hmsk.logic.Tabs;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Duration;
 import java.util.*;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -215,8 +217,13 @@ public class ChromeController {
         System.out.println("Filters resetted.");
 
         // State Selector
-        getElement(Xpath.creditNote).click();
-        new Actions(driver).pause(Duration.ofMillis(20)).build().perform();
+        if (PreRun.instance.isInvoiceSelected()) {
+            getElement(Xpath.creditNote).click();
+            new Actions(driver).pause(Duration.ofMillis(20)).build().perform();
+        } else {
+            getElement(Xpath.invoice).click();
+            new Actions(driver).pause(Duration.ofMillis(20)).build().perform();
+        }
         getElement(Xpath.debitNote).click();
         new Actions(driver).pause(Duration.ofMillis(20)).build().perform();
         getElement(Xpath.stateFilterAll).click();
@@ -225,6 +232,17 @@ public class ChromeController {
         new Actions(driver).pause(Duration.ofMillis(20)).build().perform();
         getElement(Xpath.stateFilterProcessed).click();
         System.out.println("State Set.");
+        
+        // Date Filter Handler
+        if (!PreRun.getInstance().hasDateFilter()) {
+            new Actions(driver).click(getElement(Xpath.dateReceptionFrom)).build().perform();
+            new Actions(driver).pause(Duration.ofMillis(250)).build().perform();
+            new Actions(driver).sendKeys(Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE,
+                    Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE,
+                    Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE,
+                    Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE
+            ).build().perform();
+        }
 
         // Search for the NIPC
         new Actions(driver).pause(Duration.ofMillis(250)).build().perform();
@@ -292,6 +310,18 @@ public class ChromeController {
             RunningPane.instance.logProgress("A abrir os detalhes da fatura: " + invoiceName + "... (Pode demorar)");
 
             waitForSpinner();
+            
+            // Detect Alert Popup
+            new Actions(driver).pause(Duration.ofMillis(750)).build().perform();
+            try {
+                getElement(Xpath.alertWindow);
+                RunningPane.instance.logProgress("Foi detetado o Popup de Alerta de introdução manual.");
+                System.out.println("Alert Popup window detected.");
+                getElement(Xpath.alertWindowOkButton).click();
+                System.out.println("Closing the alert by clicking Ok.");
+            } catch (NoSuchElementException e) {
+                System.out.println("No alert popup window detected.");
+            }
 
             longWait.until(ExpectedConditions
                     .visibilityOfElementLocated(By.xpath(Xpath.paymentInfoButton)));

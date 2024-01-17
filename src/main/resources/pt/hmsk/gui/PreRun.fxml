@@ -4,11 +4,19 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pt.hmsk.gui.PreRun">
+<AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="91.0" prefWidth="420.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pt.hmsk.gui.PreRun">
    <children>
       <Button fx:id="btnStart" disable="true" layoutX="180.0" layoutY="30.0" mnemonicParsing="false" onMouseClicked="#btnStartOnClicked" text="Iniciar Execução" />
       <Label layoutX="10.0" layoutY="5.0" text="Introduza o NIPC do fornecedor" />
       <TextField fx:id="txtNIPC" disable="true" layoutX="10.0" layoutY="30.0" />
+      <CheckBox fx:id="cbDateFilter" layoutX="10.0" layoutY="66.0" mnemonicParsing="false" text="Pesquisar todas as faturas (Sem data no filtro)" />
+      <Separator layoutX="292.0" layoutY="6.0" orientation="VERTICAL" prefHeight="79.0" prefWidth="2.0" />
+      <RadioButton fx:id="rbFt" layoutX="304.0" layoutY="22.0" mnemonicParsing="false" selected="true" text="Faturas">
+         <toggleGroup>
+            <ToggleGroup fx:id="ft" />
+         </toggleGroup>
+      </RadioButton>
+      <RadioButton fx:id="rbNc" layoutX="304.0" layoutY="47.0" mnemonicParsing="false" text="Notas de Crédito" toggleGroup="$ft" />
    </children>
    <padding>
       <Insets bottom="8.0" right="10.0" />

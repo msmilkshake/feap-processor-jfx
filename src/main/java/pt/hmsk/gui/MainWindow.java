@@ -63,8 +63,6 @@ public class MainWindow {
     @FXML
     public TextField txtFilePicker;
     @FXML
-    public Button btnLoadFile;
-    @FXML
     public ImageView spinner;
 
     private ChromeController controller;

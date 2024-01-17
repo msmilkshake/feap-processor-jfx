@@ -32,8 +32,10 @@ public interface Xpath {
     // Filters
     String stateFilterAll = "//*/input[@id=\"chk_F_001_stateAll\"]";
     String stateFilterProcessed = "//*/input[@id=\"chk_F_001_state11\"]";
+    String invoice = "//span[@class=\"chkDocumentType\"]//input[contains(@id, \"docType1\")]";
     String creditNote = "//span[@class=\"chkDocumentType\"]//input[contains(@id, \"docType2\")]";
     String debitNote = "//span[@class=\"chkDocumentType\"]//input[contains(@id, \"docType3\")]";
+    String dateFilterFrom = "//*/input[@id=\"dt_F_001_ReceptionDateFrom\"]";
     
     // Invoice Details
     String paymentInfoButton = "//li[3]//span[@class=\"rtsLink\"]";
@@ -51,5 +53,7 @@ public interface Xpath {
     String goBack = "//div[contains(@id, \"BottomButtons\")]//input[contains(@id, " +
             "\"CancelButton\") and contains(@class, \"Button\")]";
     String confirmButton = "//table[@class=\"rwTable rwShadow\"]//span[@class=\"rwOuterSpan\"]";
+    String alertWindow = "//div[contains(@id, \"RadWindowWrapper_alert\")]";
+    String alertWindowOkButton = "//div[contains(@id, \"RadWindowWrapper_alert\")]//span[@class=\"rwInnerSpan\"]";
     
 }
